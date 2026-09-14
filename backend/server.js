@@ -72,8 +72,8 @@ LARA — Guardian of Second Chances
         });
     }
 });
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
     console.log(
-        `LARA backend running at http://localhost:${PORT}`
+        `LARA backend running on port ${PORT}`
     );
 });
