@@ -210,7 +210,7 @@ window.addEventListener("DOMContentLoaded", () => {
     async function sendConversationEmail() {
         try {
             const response = await fetch(
-                "http://localhost:3000/api/send-email",
+                "https://lara-backend-pigl.onrender.com/api/send-email",
                 {
                     method: "POST",
                     headers: {
