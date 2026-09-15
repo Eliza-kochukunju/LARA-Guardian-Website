@@ -74,15 +74,15 @@ app.post("/api/send-email", async (req, res) => {
             `
         });
 
-        if (error) {
-            console.error("Resend error:", error);
+       if (error) {
+    console.error("RESEND ERROR:", error);
 
-            return res.status(500).json({
-                success: false,
-                message: "Failed to send email"
-            });
-        }
-
+    return res.status(500).json({
+        success: false,
+        message: error.message || "Failed to send email",
+        error: error
+    });
+}
         console.log("LARA email sent successfully ✦");
         console.log("Resend email ID:", data.id);
 
@@ -92,7 +92,7 @@ app.post("/api/send-email", async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Email error:", error);
+       console.error("EMAIL ERROR:", error); 
 
         res.status(500).json({
             success: false,
