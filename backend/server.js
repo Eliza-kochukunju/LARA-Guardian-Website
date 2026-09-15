@@ -1,4 +1,3 @@
-```js
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
@@ -151,4 +150,3 @@ app.post("/api/send-email", async (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`LARA backend running on port ${PORT}`);
 });
-```
