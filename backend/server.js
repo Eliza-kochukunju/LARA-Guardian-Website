@@ -96,14 +96,22 @@ app.post("/api/send-email", async (req, res) => {
         });
 
     } catch (error) {
-        console.error(
-            "GMAIL ERROR:",
-            error.response?.data || error.message || error
-        );
+        const gmailError = error.response?.data || {};
+        const errorMessage =
+            gmailError.error?.message ||
+            gmailError.message ||
+            error.message ||
+            "Unknown Gmail error";
+
+        console.error("========== GMAIL ERROR ==========");
+        console.error("Status:", error.response?.status);
+        console.error("Message:", errorMessage);
+        console.error("Full error:", gmailError);
+        console.error("=================================");
 
         res.status(500).json({
             success: false,
-            message: "Failed to send email"
+            message: errorMessage
         });
     }
 });
