@@ -1,3 +1,4 @@
+```js
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
@@ -57,7 +58,8 @@ app.post("/api/send-email", async (req, res) => {
             `From: ${process.env.GMAIL_USER}`,
             `To: ${process.env.GMAIL_USER}`,
             `Subject: ${subject}`,
-            "Content-Type: text/plain; charset=utf-8",
+            "MIME-Version: 1.0",
+            "Content-Type: text/plain; charset=UTF-8",
             "",
             "LARA — New Conversation",
             "",
@@ -72,13 +74,17 @@ app.post("/api/send-email", async (req, res) => {
             concern,
             "",
             "LARA — Guardian of Second Chances"
-        ].join("\n");
+        ].join("\r\n");
 
         const encodedMessage = Buffer.from(message)
             .toString("base64")
             .replace(/\+/g, "-")
             .replace(/\//g, "_")
             .replace(/=+$/, "");
+
+        console.log("Sending LARA email...");
+        console.log("Authenticated Gmail:", process.env.GMAIL_USER);
+        console.log("Visitor email:", email);
 
         const result = await gmail.users.messages.send({
             userId: "me",
@@ -87,16 +93,42 @@ app.post("/api/send-email", async (req, res) => {
             }
         });
 
-        console.log("LARA email sent successfully ✦");
-        console.log("Gmail message ID:", result.data.id);
+        const messageId = result.data.id;
+
+        console.log("Gmail API response:");
+        console.log("Message ID:", messageId);
+        console.log("Thread ID:", result.data.threadId);
+        console.log("Labels:", result.data.labelIds);
+
+        if (!messageId) {
+            throw new Error("Gmail did not return a message ID.");
+        }
+
+        const verifyMessage = await gmail.users.messages.get({
+            userId: "me",
+            id: messageId,
+            format: "metadata",
+            metadataHeaders: [
+                "From",
+                "To",
+                "Subject"
+            ]
+        });
+
+        console.log("EMAIL VERIFIED IN GMAIL ✦");
+        console.log("Verified message ID:", verifyMessage.data.id);
+        console.log("Verified labels:", verifyMessage.data.labelIds);
 
         res.status(200).json({
             success: true,
-            message: "Email sent successfully ✦"
+            message: "Email sent successfully ✦",
+            gmailMessageId: messageId,
+            labels: verifyMessage.data.labelIds
         });
 
     } catch (error) {
         const gmailError = error.response?.data || {};
+
         const errorMessage =
             gmailError.error?.message ||
             gmailError.message ||
@@ -119,3 +151,4 @@ app.post("/api/send-email", async (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`LARA backend running on port ${PORT}`);
 });
+```
