@@ -14,7 +14,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "nodemailer": "^10.0.9",
-    "resend": "^6.28.0"
+    "googleapis": "^181.0.0",
+    "nodemailer": "^10.0.9"
   }
 }

@@ -2,18 +2,28 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-const { Resend } = require("resend");
+const { google } = require("googleapis");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-console.log("RESEND_API_KEY loaded:", !!process.env.RESEND_API_KEY);
-console.log("RECEIVER_EMAIL loaded:", !!process.env.RECEIVER_EMAIL);
 app.use(cors());
 app.use(express.json());
+
+const oauth2Client = new google.auth.OAuth2(
+    process.env.GMAIL_CLIENT_ID,
+    process.env.GMAIL_CLIENT_SECRET,
+    "http://localhost"
+);
+
+oauth2Client.setCredentials({
+    refresh_token: process.env.GMAIL_REFRESH_TOKEN
+});
+
+const gmail = google.gmail({
+    version: "v1",
+    auth: oauth2Client
+});
 
 app.get("/", (req, res) => {
     res.send("LARA backend is running ✦");
@@ -41,50 +51,44 @@ app.post("/api/send-email", async (req, res) => {
             timeStyle: "medium"
         });
 
-        const { data, error } = await resend.emails.send({
-            from: "LARA <onboarding@resend.dev>",
-            to: [process.env.RECEIVER_EMAIL],
-            subject: "New LARA Support Conversation",
-            html: `
-                <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-                    <h2>LARA — New Conversation</h2>
+        const subject = "New LARA Support Conversation";
 
-                    <h3>Visitor Details</h3>
+        const message = [
+            `From: ${process.env.GMAIL_USER}`,
+            `To: ${process.env.GMAIL_USER}`,
+            `Subject: ${subject}`,
+            "Content-Type: text/plain; charset=utf-8",
+            "",
+            "LARA — New Conversation",
+            "",
+            "VISITOR DETAILS",
+            `Name: ${name}`,
+            `Age: ${age}`,
+            `Location: ${location}`,
+            `Email: ${email}`,
+            `Date & Time: ${submittedAt}`,
+            "",
+            "WHAT THEY SHARED",
+            concern,
+            "",
+            "LARA — Guardian of Second Chances"
+        ].join("\n");
 
-                    <p><strong>Name:</strong> ${name}</p>
-                    <p><strong>Age:</strong> ${age}</p>
-                    <p><strong>Location:</strong> ${location}</p>
-                    <p><strong>Email:</strong> ${email}</p>
+        const encodedMessage = Buffer.from(message)
+            .toString("base64")
+            .replace(/\+/g, "-")
+            .replace(/\//g, "_")
+            .replace(/=+$/, "");
 
-                    <p>
-                        <strong>Date & Time:</strong><br>
-                        ${submittedAt}
-                    </p>
-
-                    <h3>What they shared</h3>
-
-                    <p>${concern}</p>
-
-                    <hr>
-
-                    <p>
-                        <strong>LARA — Guardian of Second Chances</strong>
-                    </p>
-                </div>
-            `
+        const result = await gmail.users.messages.send({
+            userId: "me",
+            requestBody: {
+                raw: encodedMessage
+            }
         });
 
-       if (error) {
-    console.error("RESEND ERROR:", error);
-
-    return res.status(500).json({
-        success: false,
-        message: error.message || "Failed to send email",
-        error: error
-    });
-}
         console.log("LARA email sent successfully ✦");
-        console.log("Resend email ID:", data.id);
+        console.log("Gmail message ID:", result.data.id);
 
         res.status(200).json({
             success: true,
@@ -92,7 +96,10 @@ app.post("/api/send-email", async (req, res) => {
         });
 
     } catch (error) {
-       console.error("EMAIL ERROR:", error); 
+        console.error(
+            "GMAIL ERROR:",
+            error.response?.data || error.message || error
+        );
 
         res.status(500).json({
             success: false,
