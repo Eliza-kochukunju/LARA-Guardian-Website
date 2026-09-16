@@ -16,6 +16,14 @@ const gmail = google.gmail({
 });
 
 module.exports = async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+    if (req.method === "OPTIONS") {
+        return res.status(200).end();
+    }
+
     if (req.method !== "POST") {
         return res.status(405).json({
             success: false,
@@ -35,7 +43,8 @@ module.exports = async (req, res) => {
 
         const submittedAt = new Date().toLocaleString("en-IN", {
             dateStyle: "full",
-            timeStyle: "medium"
+            timeStyle: "medium",
+            timeZone: "Asia/Kolkata"
         });
 
         const subject = "New LARA Support Conversation";
