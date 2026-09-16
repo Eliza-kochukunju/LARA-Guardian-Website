@@ -1,3 +1,7 @@
 backend/.env
 backend/node_modules/
 backend/authorize.js
+.vercel
+.env*
+
+node_modules/
