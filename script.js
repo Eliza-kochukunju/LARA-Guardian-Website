@@ -249,7 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function sendConversationEmail() {
         try {
             const response = await fetch(
-                "https://lara-backend-pigl.onrender.com/api/send-email",
+                "https://lara-guardian-website.vercel.app/api/send-email",
                 {
                     method: "POST",
                     headers: {
